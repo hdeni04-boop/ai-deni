@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude</title>
+<link href="https://fonts.googleapis.com/css2?family=Styrene+A:wght@400;500&family=Tiempos+Text:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f0e8;
+  --sidebar-bg: #ede8df;
+  --surface: #fff;
+  --border: #d6cebd;
+  --border-light: #e8e2d6;
+  --text: #1a1a1a;
+  --text-muted: #7a6f5e;
+  --text-light: #9a8f7e;
+  --accent: #c17f2e;
+  --accent-bg: #f5ede0;
+  --claude-orange: #c17f2e;
+  --hover: rgba(0,0,0,0.04);
+  --user-bubble-bg: #fff;
+  --ai-text: #1a1a1a;
+  --input-bg: #fff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --sidebar-width: 260px;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Styrene A', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar-top {
+  padding: 12px 10px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.claude-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+.claude-logo:hover { background: var(--hover); }
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.logo-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.2px;
+}
+
+.sidebar-icons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.icon-btn:hover { background: var(--hover); color: var(--text); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+.new-chat-btn {
+  margin: 4px 10px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-muted);
+  width: calc(100% - 20px);
+  transition: background 0.15s, color 0.15s;
+}
+.new-chat-btn:hover { background: var(--hover); color: var(--text); }
+.new-chat-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.sidebar-section {
+  padding: 0 10px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-section::-webkit-scrollbar { width: 4px; }
+.sidebar-section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-light);
+  padding: 12px 8px 4px;
+}
+
+.chat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.15s, color 0.15s;
+}
+.chat-item:hover { background: var(--hover); color: var(--text); }
+.chat-item.active { background: rgba(193,127,46,0.1); color: var(--text); }
+.chat-item svg { width: 14px; height: 14px; flex-shrink: 0; opacity: 0.6; }
+
+.sidebar-bottom {
+  border-top: 1px solid var(--border-light);
+  padding: 8px 10px;
+}
+
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: inherit;
+}
+.profile-btn:hover { background: var(--hover); }
+
+.avatar-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8a87c, #c17f2e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+
+.profile-info { text-align: left; }
+.profile-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.profile-plan { font-size: 11px; color: var(--text-light); }
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+  position: relative;
+}
+
+/* Top bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+  background: var(--bg);
+}
+
+.model-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+  transition: border-color 0.15s;
+}
+.model-selector:hover { border-color: var(--text-muted); }
+.model-selector svg { width: 14px; height: 14px; color: var(--text-muted); }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.share-btn:hover { border-color: var(--text-muted); color: var(--text); }
+.share-btn svg { width: 14px; height: 14px; }
+
+/* Chat area */
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+.chat-area::-webkit-scrollbar { width: 6px; }
+.chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.chat-area::-webkit-scrollbar-track { background: transparent; }
+
+.chat-inner {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Welcome screen */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 40px 20px;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-logo {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 20px;
+}
+
+.welcome h1 {
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.welcome-subtitle {
+  color: var(--text-muted);
+  font-size: 15px;
+  margin-bottom: 36px;
+}
+
+.suggestion-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 540px;
+}
+
+.sug-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sug-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(193,127,46,0.12);
+  transform: translateY(-1px);
+}
+.sug-icon { font-size: 18px; margin-bottom: 2px; }
+.sug-title { font-size: 13.5px; font-weight: 500; color: var(--text); }
+.sug-desc { font-size: 12px; color: var(--text-muted); }
+
+/* Messages */
+.message-group {
+  padding: 20px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.message-group + .message-group {
+  border-top: 1px solid var(--border-light);
+}
+
+/* User message */
+.user-message {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.user-bubble {
+  max-width: 80%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px 18px 4px 18px;
+  padding: 12px 18px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* AI message */
+.ai-message {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.ai-avatar {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ai-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-text {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ai-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ai-text p { margin-bottom: 12px; }
+.ai-text p:last-child { margin-bottom: 0; }
+
+.ai-text strong { font-weight: 600; }
+.ai-text em { font-style: italic; }
+
+.ai-text h1, .ai-text h2, .ai-text h3 {
+  font-weight: 600;
+  margin: 16px 0 8px;
+  line-height: 1.3;
+}
+.ai-text h1 { font-size: 20px; }
+.ai-text h2 { font-size: 17px; }
+.ai-text h3 { font-size: 15px; }
+
+.ai-text ul, .ai-text ol {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+.ai-text li { margin-bottom: 4px; }
+
+.ai-text code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px;
+  background: rgba(0,0,0,0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: #d4520f;
+}
+
+.ai-text pre {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 10px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ai-text pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.ai-text blockquote {
+  border-left: 3px solid var(--border);
+  padding-left: 14px;
+  color: var(--text-muted);
+  margin: 10px 0;
+  font-style: italic;
+}
+
+.ai-text hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+.ai-text a { color: var(--accent); text-decoration: underline; }
+
+/* Action buttons under AI message */
+.ai-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.action-btn:hover { background: var(--hover); color: var(--text); border-color: var(--text-muted); }
+.action-btn svg { width: 13px; height: 13px; }
+
+/* Typing indicator */
+.typing {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 8px 0;
+}
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  animation: typingAnim 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingAnim {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* ── INPUT AREA ── */
+.input-section {
+  flex-shrink: 0;
+  background: var(--bg);
+  padding: 0 0 16px;
+}
+
+.input-container {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.input-box {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.input-box:focus-within {
+  border-color: rgba(193,127,46,0.5);
+  box-shadow: 0 2px 8px rgba(193,127,46,0.12), 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.input-top {
+  padding: 14px 16px 6px;
+}
+
+textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  resize: none;
+  min-height: 24px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: block;
+}
+textarea::-webkit-scrollbar { width: 4px; }
+textarea::-webkit-scrollbar-thumb { background: var(--border); }
+textarea::placeholder { color: var(--text-light); }
+
+.input-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 12px;
+}
+
+.input-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+.tool-btn:hover { background: var(--hover); color: var(--text); border-color: var(--border); }
+.tool-btn svg { width: 14px; height: 14px; }
+
+.send-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.send-btn:hover { background: #333; transform: scale(1.03); }
+.send-btn:disabled { background: var(--border); cursor: not-allowed; transform: none; }
+.send-btn svg { width: 15px; height: 15px; fill: white; transform: translateX(1px); }
+
+.input-footer {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-light);
+  margin-top: 10px;
+  letter-spacing: 0.1px;
+}
+
+/* Utilities */
+.hidden { display: none !important; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .suggestion-grid { grid-template-columns: 1fr; }
+  .user-bubble { max-width: 92%; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <a class="claude-logo" href="#">
+        <!-- Claude logo SVG -->
+        <svg class="logo-mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 2C8.268 2 2 8.268 2 16s6.268 14 14 14 14-6.268 14-14S23.732 2 16 2z" fill="#c17f2e" opacity="0.15"/>
+          <path d="M21.5 10.5c-1.1-1.8-2.6-2.8-4.3-2.9L10 19.5c.8 1.6 2.2 2.7 3.9 3l7.6-12zM10.5 21.5c1.1 1.8 2.6 2.8 4.3 2.9L22 12c-.8-1.6-2.2-2.7-3.9-3l-7.6 12.5z" fill="#c17f2e"/>
+        </svg>
+        <span class="logo-name">Claude</span>
+      </a>
+      <div class="sidebar-icons">
+        <button class="icon-btn" title="Search">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="8.5" cy="8.5" r="5.5"/><path d="M15 15l-3-3" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="new-chat-btn" onclick="newChat()">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+        <path d="M10 4v12M4 10h12" stroke-linecap="round"/>
+      </svg>
+      Obrolan baru
+    </button>
+
+    <div class="sidebar-section">
+      <div class="section-label">Hari ini</div>
+      <div class="chat-item active" onclick="selectChat(this)">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Obrolan saat ini
+      </div>
+
+      <div class="section-label">Kemarin</div>
+      <div class="chat-item" onclick="selectChat(this)">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Buatkan saya aplikasi AI
+      </div>
+      <div class="chat-item" onclick="selectChat(this)">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Cara belajar Python cepat
+      </div>
+      <div class="chat-item" onclick="selectChat(this)">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Tips menulis email profesional
+      </div>
+
+      <div class="section-label">7 hari lalu</div>
+      <div class="chat-item" onclick="selectChat(this)">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Analisis data Excel
+      </div>
+      <div class="chat-item" onclick="selectChat(this)">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H6l-4 4V5z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Resep makanan sehat
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <button class="profile-btn">
+        <div class="avatar-circle">A</div>
+        <div class="profile-info">
+          <div class="profile-name">Akun Saya</div>
+          <div class="profile-plan">Free Plan</div>
+        </div>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <button class="model-selector">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:16px;height:16px;">
+          <path d="M10 2L4 7h4v11h4V7h4L10 2z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Claude Sonnet 4
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 8l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="topbar-right">
+        <button class="share-btn">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="16" cy="4" r="2"/><circle cx="4" cy="10" r="2"/><circle cx="16" cy="16" r="2"/>
+            <path d="M5.9 11.1l8.2 3.8M14.1 5.1L5.9 8.9" stroke-linecap="round"/>
+          </svg>
+          Bagikan
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-area" id="chatArea">
+      <div class="chat-inner" id="chatInner">
+
+        <!-- Welcome screen -->
+        <div class="welcome" id="welcome">
+          <svg class="welcome-logo" viewBox="0 0 56 56" fill="none">
+            <circle cx="28" cy="28" r="28" fill="#f5ede0"/>
+            <path d="M36 18c-1.9-3.2-4.6-5-7.6-5.2L14 37.5c1.4 2.8 3.9 4.8 6.9 5.4L36 18zM20 43c1.9 3.2 4.6 5 7.6 5.2L42 24.5c-1.4-2.8-3.9-4.8-6.9-5.4L20 43z" fill="#c17f2e"/>
+          </svg>
+          <h1>Halo! Apa yang bisa saya bantu?</h1>
+          <p class="welcome-subtitle">Tanya apa saja — saya siap membantu</p>
+
+          <div class="suggestion-grid">
+            <button class="sug-card" onclick="sendSuggestion('Bantu saya menulis email profesional untuk rekan kerja')">
+              <div class="sug-icon">✍️</div>
+              <div class="sug-title">Tulis email profesional</div>
+              <div class="sug-desc">Draft pesan untuk rekan atau klien</div>
+            </button>
+            <button class="sug-card" onclick="sendSuggestion('Jelaskan konsep machine learning dengan contoh sederhana')">
+              <div class="sug-icon">🧠</div>
+              <div class="sug-title">Jelaskan topik kompleks</div>
+              <div class="sug-desc">Sederhanakan konsep sulit</div>
+            </button>
+            <button class="sug-card" onclick="sendSuggestion('Buatkan saya rencana belajar coding selama 3 bulan')">
+              <div class="sug-icon">💻</div>
+              <div class="sug-title">Rencana belajar coding</div>
+              <div class="sug-desc">Panduan belajar pemrograman</div>
+            </button>
+            <button class="sug-card" onclick="sendSuggestion('Berikan saya 10 ide bisnis online yang bisa dimulai dengan modal kecil')">
+              <div class="sug-icon">💡</div>
+              <div class="sug-title">Ide bisnis online</div>
+              <div class="sug-desc">Peluang usaha dengan modal minim</div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Input Section -->
+    <div class="input-section">
+      <div class="input-container">
+        <div class="input-box">
+          <div class="input-top">
+            <textarea
+              id="userInput"
+              placeholder="Kirim pesan ke Claude"
+              rows="1"
+              onkeydown="handleKey(event)"
+              oninput="autoResize(this)"
+            ></textarea>
+          </div>
+          <div class="input-bottom">
+            <div class="input-tools">
+              <button class="tool-btn" title="Lampirkan file">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+                  <path d="M16 12l-4 4H6a2 2 0 01-2-2V6a2 2 0 012-2h6l4 4v4z" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 10h-4v4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Lampirkan
+              </button>
+              <button class="tool-btn" title="Pencarian web">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+                  <circle cx="8.5" cy="8.5" r="5"/><path d="M15 15l-2.5-2.5" stroke-linecap="round"/>
+                </svg>
+                Cari web
+              </button>
+            </div>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <p class="input-footer">Claude bisa membuat kesalahan. Periksa informasi penting.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const chatInner = document.getElementById('chatInner');
+  const chatArea = document.getElementById('chatArea');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const welcome = document.getElementById('welcome');
+
+  let history = [];
+  let isLoading = false;
+
+  // Enable/disable send button
+  userInput.addEventListener('input', () => {
+    sendBtn.disabled = !userInput.value.trim() || isLoading;
+  });
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 220) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendMessage();
+    }
+  }
+
+  function sendSuggestion(text) {
+    userInput.value = text;
+    autoResize(userInput);
+    sendBtn.disabled = false;
+    sendMessage();
+  }
+
+  function newChat() {
+    history = [];
+    chatInner.innerHTML = `
+      <div class="welcome" id="welcome">
+        <svg class="welcome-logo" viewBox="0 0 56 56" fill="none">
+          <circle cx="28" cy="28" r="28" fill="#f5ede0"/>
+          <path d="M36 18c-1.9-3.2-4.6-5-7.6-5.2L14 37.5c1.4 2.8 3.9 4.8 6.9 5.4L36 18zM20 43c1.9 3.2 4.6 5 7.6 5.2L42 24.5c-1.4-2.8-3.9-4.8-6.9-5.4L20 43z" fill="#c17f2e"/>
+        </svg>
+        <h1>Halo! Apa yang bisa saya bantu?</h1>
+        <p class="welcome-subtitle">Tanya apa saja — saya siap membantu</p>
+        <div class="suggestion-grid">
+          <button class="sug-card" onclick="sendSuggestion('Bantu saya menulis email profesional untuk rekan kerja')">
+            <div class="sug-icon">✍️</div>
+            <div class="sug-title">Tulis email profesional</div>
+            <div class="sug-desc">Draft pesan untuk rekan atau klien</div>
+          </button>
+          <button class="sug-card" onclick="sendSuggestion('Jelaskan konsep machine learning dengan contoh sederhana')">
+            <div class="sug-icon">🧠</div>
+            <div class="sug-title">Jelaskan topik kompleks</div>
+            <div class="sug-desc">Sederhanakan konsep sulit</div>
+          </button>
+          <button class="sug-card" onclick="sendSuggestion('Buatkan saya rencana belajar coding selama 3 bulan')">
+            <div class="sug-icon">💻</div>
+            <div class="sug-title">Rencana belajar coding</div>
+            <div class="sug-desc">Panduan belajar pemrograman</div>
+          </button>
+          <button class="sug-card" onclick="sendSuggestion('Berikan saya 10 ide bisnis online yang bisa dimulai dengan modal kecil')">
+            <div class="sug-icon">💡</div>
+            <div class="sug-title">Ide bisnis online</div>
+            <div class="sug-desc">Peluang usaha dengan modal minim</div>
+          </button>
+        </div>
+      </div>`;
+    userInput.value = '';
+    userInput.style.height = 'auto';
+    sendBtn.disabled = true;
+  }
+
+  function selectChat(el) {
+    document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function removeWelcome() {
+    const w = document.getElementById('welcome');
+    if (w) w.remove();
+  }
+
+  function addUserMessage(text) {
+    removeWelcome();
+    const group = document.createElement('div');
+    group.className = 'message-group';
+    group.innerHTML = `
+      <div class="user-message">
+        <div class="user-bubble">${escapeHtml(text)}</div>
+      </div>`;
+    chatInner.appendChild(group);
+    scrollDown();
+    return group;
+  }
+
+  function addAiMessage(group) {
+    const aiDiv = document.createElement('div');
+    aiDiv.className = 'ai-message';
+    aiDiv.innerHTML = `
+      <svg class="ai-avatar" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="#f5ede0"/>
+        <path d="M18 8.5c-1-1.6-2.3-2.5-3.8-2.6L8 19.8c.7 1.4 1.9 2.4 3.4 2.7L18 8.5zM10 21.5c1 1.6 2.3 2.5 3.8 2.6L20 12.3c-.7-1.4-1.9-2.4-3.4-2.7L10 21.5z" fill="#c17f2e"/>
+      </svg>
+      <div class="ai-content">
+        <div class="ai-name">Claude</div>
+        <div class="ai-text" id="aiTextCurrent">
+          <div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+        </div>
+        <div class="ai-actions" style="display:none" id="aiActionsCurrent">
+          <button class="action-btn" onclick="copyResponse(this)">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="8" y="8" width="9" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 13H3a1 1 0 01-1-1V3a1 1 0 011-1h9a1 1 0 011 1v1" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Salin
+          </button>
+          <button class="action-btn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M14 10H3M7 6l-4 4 4 4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 6v8" stroke-linecap="round"/>
+            </svg>
+            Coba lagi
+          </button>
+          <button class="action-btn">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M10 3v10M5 8l5-5 5 5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Lebih pendek
+          </button>
+        </div>
+      </div>`;
+    group.appendChild(aiDiv);
+    scrollDown();
+    return aiDiv;
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function formatMarkdown(text) {
+    // Code blocks
+    text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) =>
+      `<pre><code>${escapeHtml(code.trim())}</code></pre>`);
+    // Inline code
+    text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+    // Bold
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // Headers
+    text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+    text = text.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+    text = text.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    // Blockquote
+    text = text.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+    // Unordered list
+    text = text.replace(/^\- (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+    // Ordered list
+    text = text.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    // HR
+    text = text.replace(/^---$/gm, '<hr>');
+    // Paragraphs (double newlines)
+    const blocks = text.split(/\n{2,}/);
+    return blocks.map(b => {
+      if (/^<(h[1-3]|ul|ol|pre|blockquote|hr)/.test(b.trim())) return b;
+      return `<p>${b.replace(/\n/g, '<br>')}</p>`;
+    }).join('\n');
+  }
+
+  function copyResponse(btn) {
+    const aiContent = btn.closest('.ai-content');
+    const textEl = aiContent.querySelector('.ai-text');
+    navigator.clipboard.writeText(textEl.innerText).then(() => {
+      btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/></svg> Disalin!`;
+      setTimeout(() => {
+        btn.innerHTML = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="8" y="8" width="9" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 13H3a1 1 0 01-1-1V3a1 1 0 011-1h9a1 1 0 011 1v1" stroke-linecap="round" stroke-linejoin="round"/></svg> Salin`;
+      }, 2000);
+    });
+  }
+
+  function scrollDown() {
+    setTimeout(() => chatArea.scrollTop = chatArea.scrollHeight, 60);
+  }
+
+  async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text || isLoading) return;
+
+    isLoading = true;
+    sendBtn.disabled = true;
+    userInput.value = '';
+    userInput.style.height = 'auto';
+
+    history.push({ role: 'user', content: text });
+
+    const group = addUserMessage(text);
+    const aiDiv = addAiMessage(group);
+    const aiTextEl = document.getElementById('aiTextCurrent');
+    const aiActionsEl = document.getElementById('aiActionsCurrent');
+
+    // Give unique IDs
+    const uid = Date.now();
+    aiTextEl.id = 'aiText_' + uid;
+    aiActionsEl.id = 'aiActions_' + uid;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: 'Kamu adalah Claude, asisten AI buatan Anthropic. Kamu cerdas, membantu, jujur, dan selalu berpikir sebelum menjawab. Kamu berbicara dalam Bahasa Indonesia yang natural, hangat, dan profesional. Gunakan format Markdown ketika membantu dengan kode, daftar, atau penjelasan terstruktur.',
+          messages: history
+        })
+      });
+
+      const data = await res.json();
+      const aiText = data.content?.[0]?.text || 'Maaf, terjadi kesalahan. Coba lagi.';
+
+      history.push({ role: 'assistant', content: aiText });
+
+      document.getElementById('aiText_' + uid).innerHTML = formatMarkdown(aiText);
+      document.getElementById('aiActions_' + uid).style.display = 'flex';
+
+    } catch (err) {
+      document.getElementById('aiText_' + uid).innerHTML =
+        '<p style="color:#c0392b">⚠️ Gagal terhubung. Periksa koneksi internet kamu.</p>';
+    }
+
+    isLoading = false;
+    sendBtn.disabled = !userInput.value.trim();
+    userInput.focus();
+    scrollDown();
+  }
+</script>
+</body>
+</html>
